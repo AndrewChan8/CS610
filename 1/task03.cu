@@ -2,7 +2,10 @@
 #include <stdio.h>
 #include <cuda_runtime.h>
 
-#define N 2048
+// Task 03.5: non-square matrix dimensions
+#define ROWS 2048
+#define COLS 2050
+
 #define TILE 16  // 16x16 threads per block
 
 void checkCUDAError(const char*);
@@ -11,7 +14,8 @@ void random_ints(int *a, int len);
 void matrixAddCPU(const int *a, const int *b, int *c_ref, int width, int height);
 int validate(const int *c, const int *c_ref, int len);
 
-__global__ void matrixAdd(const int *a, const int *b, int *c, int width, int height) {
+__global__ void matrixAdd(const int *a, const int *b, int *c, int width, int height)
+{
 	int col = blockIdx.x * blockDim.x + threadIdx.x; // x -> columns
 	int row = blockIdx.y * blockDim.y + threadIdx.y; // y -> rows
 
@@ -21,12 +25,14 @@ __global__ void matrixAdd(const int *a, const int *b, int *c, int width, int hei
 	}
 }
 
-int main(void) {
+int main(void)
+{
 	int *a, *b, *c, *c_ref;     // host
 	int *d_a, *d_b, *d_c;       // device
 
-	const int width  = N;
-	const int height = N;
+	const int width  = COLS;
+	const int height = ROWS;
+
 	const size_t numElems = (size_t)width * (size_t)height;
 	const size_t size = numElems * sizeof(int);
 
@@ -53,7 +59,7 @@ int main(void) {
 	cudaMemcpy(d_b, b, size, cudaMemcpyHostToDevice);
 	checkCUDAError("CUDA memcpy H2D");
 
-	// 2D launch: grid covers width x height, blocks are 16x16
+	// 2D launch
 	dim3 threadsPerBlock(TILE, TILE);
 	dim3 blocksPerGrid((width + TILE - 1) / TILE, (height + TILE - 1) / TILE);
 
@@ -78,7 +84,8 @@ int main(void) {
 	return 0;
 }
 
-void checkCUDAError(const char *msg) {
+void checkCUDAError(const char *msg)
+{
 	cudaError_t err = cudaGetLastError();
 	if (cudaSuccess != err) {
 		fprintf(stderr, "CUDA ERROR: %s: %s.\n", msg, cudaGetErrorString(err));
@@ -86,16 +93,19 @@ void checkCUDAError(const char *msg) {
 	}
 }
 
-void random_ints(int *a, int len) {
+void random_ints(int *a, int len)
+{
 	for (int i = 0; i < len; i++) a[i] = rand();
 }
 
-void matrixAddCPU(const int *a, const int *b, int *c_ref, int width, int height) {
+void matrixAddCPU(const int *a, const int *b, int *c_ref, int width, int height)
+{
 	int len = width * height;
 	for (int i = 0; i < len; i++) c_ref[i] = a[i] + b[i];
 }
 
-int validate(const int *c, const int *c_ref, int len) {
+int validate(const int *c, const int *c_ref, int len)
+{
 	int errors = 0;
 	for (int i = 0; i < len; i++) {
 		if (c[i] != c_ref[i]) {
