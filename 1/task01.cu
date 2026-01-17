@@ -40,7 +40,6 @@ __global__ void affine_decrypt_multiblock(int *d_input, int *d_output)
     }
 }
 
-
 int main(int argc, char *argv[])
 {
 	int *h_input, *h_output;
@@ -51,33 +50,34 @@ int main(int argc, char *argv[])
 	size = N * sizeof(int);
 
 	/* allocate the host memory */
-	h_input = (int *)malloc(size);
+	h_input  = (int *)malloc(size);
 	h_output = (int *)malloc(size);
 
 	/* Exercise 1.3: allocate device memory */
-	cudaMalloc((void**)&d_input, size);
+	cudaMalloc((void**)&d_input,  size);
 	cudaMalloc((void**)&d_output, size);
-
 	checkCUDAError("Memory allocation");
 
-	/* read the encryted text */
+	/* read the encrypted text */
 	read_encrypted_file(h_input);
 
 	/* Exercise 1.4: copy host input to device input */
 	cudaMemcpy(d_input, h_input, size, cudaMemcpyHostToDevice);
 	checkCUDAError("Input transfer to device");
 
-	/* Exercise 1.5: Configure the grid of thread blocks and run the GPU kernel */
-	int threads = 256;
-	int blocks  = (N + threads - 1) / threads;   // ceiling division
-
-	dim3 blocksPerGrid(blocks);
-	dim3 threadsPerBlock(threads);
-	affine_decrypt_multiblock<<<blocksPerGrid, threadsPerBlock>>>(d_input, d_output);
-
-	/* wait for all threads to complete */
+	/* Exercise 1.5: single-block kernel: 1 block of N threads */
+	dim3 blocksPerGrid_single(1);
+	dim3 threadsPerBlock_single(N);
+	affine_decrypt<<<blocksPerGrid_single, threadsPerBlock_single>>>(d_input, d_output);
 	cudaDeviceSynchronize();
-	checkCUDAError("Kernel execution");
+	checkCUDAError("Single-block kernel execution");
+
+	/* Exercise 1.8: multiblock kernel: 8 blocks of 128 threads */
+	dim3 threadsPerBlock(128);
+	dim3 blocksPerGrid(8);   // 8 * 128 = 1024 = N
+	affine_decrypt_multiblock<<<blocksPerGrid, threadsPerBlock>>>(d_input, d_output);
+	cudaDeviceSynchronize();
+	checkCUDAError("Multiblock kernel execution");
 
 	/* Exercise 1.6: copy the gpu output back to the host */
 	cudaMemcpy(h_output, d_output, size, cudaMemcpyDeviceToHost);
@@ -100,7 +100,6 @@ int main(int argc, char *argv[])
 
 	return 0;
 }
-
 
 void checkCUDAError(const char *msg)
 {
