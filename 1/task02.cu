@@ -18,7 +18,6 @@ __global__ void vectorAdd(int *a, int *b, int *c, int max) {
 	}
 }
 
-
 int main(void) {
 	int *a, *b, *c, *c_ref;			// host copies of a, b, c
 	int *d_a, *d_b, *d_c;			// device copies of a, b, c
