@@ -1,0 +1,4 @@
+Skipping CPU verification for large size (10000 x 10000 * 10000 x 10000)
+[Task2] Block 8x8 → Time: 945.764 ms, GFLOPs: 2114.69
+[Task2] Block 16x16 → Time: 560.660 ms, GFLOPs: 3567.22
+[Task2] Block 32x32 → Time: 537.012 ms, GFLOPs: 3724.31

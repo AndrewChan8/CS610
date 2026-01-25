@@ -1,4 +1,0 @@
-Skipping CPU verification for large size (10000 x 10000 * 10000 x 10000)
-Block 8x8 → Time: 1494.724 ms, GFLOPs: 1338.04
-Block 16x16 → Time: 837.904 ms, GFLOPs: 2386.91
-Block 32x32 → Time: 668.092 ms, GFLOPs: 2993.60
