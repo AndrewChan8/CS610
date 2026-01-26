@@ -170,7 +170,7 @@ int main() {
     double secs   = elapsedMs / 1000.0;
     double gflops = ops / (secs * 1.0e9);
 
-    printf("Block %dx%d → Time: %.3f ms, GFLOPs: %.2f\n", BS, BS, elapsedMs, gflops);
+    printf("Block %dx%d -> Time: %.3f ms, GFLOPs: %.2f\n", BS, BS, elapsedMs, gflops);
   }
 
   // Optional: correctness check when size is small (single block size)

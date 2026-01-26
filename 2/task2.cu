@@ -164,7 +164,7 @@ int main() {
     double secs   = elapsedMs / 1000.0;
     double gflops = ops / (secs * 1.0e9);
 
-    printf("[Task2] Block %dx%d → Time: %.3f ms, GFLOPs: %.2f\n", BS, BS, elapsedMs, gflops);
+    printf("[Task2] Block %dx%d -> Time: %.3f ms, GFLOPs: %.2f\n", BS, BS, elapsedMs, gflops);
   }
 
   if (doVerify) {
