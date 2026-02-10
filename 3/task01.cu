@@ -29,8 +29,7 @@ void fillRandom(float *a, int len) {
   }
 }
 
-void matmulCPU(const float *A, const float *B, float *C,
-               int m, int k, int n) {
+void matmulCPU(const float *A, const float *B, float *C, int m, int k, int n) {
   for (int row = 0; row < m; ++row) {
     for (int col = 0; col < n; ++col) {
       float sum = 0.0f;
@@ -53,8 +52,7 @@ float maxAbsDiff(const float *a, const float *b, int len) {
 
 // Tiled matrix multiplication kernel: C = A * B
 __global__
-void matmulTiledKernel(const float *A, const float *B, float *C,
-                       int m, int k, int n) {
+void matmulTiledKernel(const float *A, const float *B, float *C, int m, int k, int n) {
   int TILE = blockDim.x;  // assume blockDim.x == blockDim.y
 
   extern __shared__ float shmem[];
@@ -97,8 +95,9 @@ void matmulTiledKernel(const float *A, const float *B, float *C,
     __syncthreads();
   }
 
-  if (row < m && col < n)
+  if (row < m && col < n){
     C[IDX2C(row, col, n)] = sum;
+  }
 }
 
 int main() {
@@ -130,8 +129,7 @@ int main() {
     printf("Running CPU reference multiply for verification...\n");
     matmulCPU(h_A, h_B, h_Cref, m, k, n);
   } else {
-    printf("Skipping CPU verification for large size (%d x %d * %d x %d)\n",
-           m, k, k, n);
+    printf("Skipping CPU verification for large size (%d x %d * %d x %d)\n", m, k, k, n);
   }
 
   // Device buffers (one set reused for all multiplies in baseline)
@@ -143,13 +141,10 @@ int main() {
 
   // Kernel configuration
   dim3 block(BLOCK_SIZE, BLOCK_SIZE);
-  dim3 grid(
-    (n + BLOCK_SIZE - 1) / BLOCK_SIZE,
-    (m + BLOCK_SIZE - 1) / BLOCK_SIZE
-  );
+  dim3 grid((n + BLOCK_SIZE - 1) / BLOCK_SIZE, (m + BLOCK_SIZE - 1) / BLOCK_SIZE);
   size_t sharedBytes = 2 * BLOCK_SIZE * BLOCK_SIZE * sizeof(float);
 
-  // ---------- Baseline: NUM_MULS multiplies, no streams ----------
+  // NUM_MULS multiplies, no streams
   cudaEvent_t start, stop;
   cudaEventCreate(&start);
   cudaEventCreate(&stop);
@@ -182,8 +177,7 @@ int main() {
   double secs     = totalMsBaseline / 1000.0;
   double gflopsBaseline = totalOps / (secs * 1.0e9);
 
-  printf("[Baseline] %d multiplies, total time: %.3f ms, throughput: %.2f GFLOPs\n",
-         NUM_MULS, totalMsBaseline, gflopsBaseline);
+  printf("[Baseline] %d multiplies, total time: %.3f ms, throughput: %.2f GFLOPs\n", NUM_MULS, totalMsBaseline, gflopsBaseline);
 
   // Optional correctness check (only for small matrices)
   if (doVerify) {
@@ -202,7 +196,7 @@ int main() {
     printf("[Baseline] Max abs diff vs CPU: %e\n", maxDiff);
   }
 
-  // ---------- Streamed version: NUM_MULS streams + async copies ----------
+  // NUM_MULS streams + async copies 
 
   cudaStream_t streams[NUM_STREAMS];
   float *d_A_stream[NUM_STREAMS];
@@ -227,20 +221,16 @@ int main() {
     int s = iter % NUM_STREAMS;
 
     // Async H2D copies in stream s
-    cudaMemcpyAsync(d_A_stream[s], h_A, sizeA,
-                    cudaMemcpyHostToDevice, streams[s]);
-    cudaMemcpyAsync(d_B_stream[s], h_B, sizeB,
-                    cudaMemcpyHostToDevice, streams[s]);
+    cudaMemcpyAsync(d_A_stream[s], h_A, sizeA, cudaMemcpyHostToDevice, streams[s]);
+    cudaMemcpyAsync(d_B_stream[s], h_B, sizeB, cudaMemcpyHostToDevice, streams[s]);
 
     // Kernel in stream s
     matmulTiledKernel<<<grid, block, sharedBytes, streams[s]>>>(
       d_A_stream[s], d_B_stream[s], d_C_stream[s], m, k, n
     );
 
-    // Async D2H copy in stream s (we only care about final result,
-    // so reusing h_C is fine)
-    cudaMemcpyAsync(h_C, d_C_stream[s], sizeC,
-                    cudaMemcpyDeviceToHost, streams[s]);
+    // Async D2H copy in stream s
+    cudaMemcpyAsync(h_C, d_C_stream[s], sizeC, cudaMemcpyDeviceToHost, streams[s]);
   }
 
   // Wait for all streams to finish
@@ -255,8 +245,7 @@ int main() {
   double secsStreams = totalMsStreams / 1000.0;
   double gflopsStreams = totalOps / (secsStreams * 1.0e9);
 
-  printf("[Streams]  %d multiplies, total time: %.3f ms, throughput: %.2f GFLOPs\n",
-         NUM_MULS, totalMsStreams, gflopsStreams);
+  printf("[Streams]  %d multiplies, total time: %.3f ms, throughput: %.2f GFLOPs\n", NUM_MULS, totalMsStreams, gflopsStreams);
 
   // Cleanup streams
   for (int i = 0; i < NUM_STREAMS; ++i) {
