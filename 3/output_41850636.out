@@ -1,0 +1,3 @@
+Skipping CPU verification for large size (10000 x 10000 * 10000 x 10000)
+[Baseline] 10 multiplies, total time: 6898.080 ms, throughput: 2899.36 GFLOPs
+[Streams]  10 multiplies, total time: 6728.680 ms, throughput: 2972.35 GFLOPs
