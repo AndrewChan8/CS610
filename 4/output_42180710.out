@@ -1,0 +1,9 @@
+Atomics: NOTE – multiple students with max=100.000000, CPU picked id=25663, GPU picked id=30676
+Atomics: Highest mark 100.000000 by student 30676
+	Execution time 210411.687500 ms
+Recursive: Highest mark 100.000000 by student 25663
+	Execution time 2.329504 ms
+SM: Highest mark 100.000000 by student 25663
+	Execution time 1.154496 ms
+Shuffle: Highest mark 100.000000 by student 25663
+	Execution time 1.211552 ms

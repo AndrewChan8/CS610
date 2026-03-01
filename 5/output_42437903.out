@@ -1,0 +1,5 @@
+VectorAdd errors: 0
+Kernel time: 0.127 ms
+Measured bandwidth: 397.088 GB/s
+Device: NVIDIA A100 80GB PCIe
+Theoretical memory bandwidth (approx): 1935.360 GB/s
